@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>DataView.qml</file>
+        <file>QueryView.qml</file>
+        <file>FlashView.qml</file>
+        <file>DataPreView.qml</file>
+        <file>CollapsiblePane.qml</file>
+        <file>../resource/loading.gif</file>
+        <file>LoadingView.qml</file>
+    </qresource>
+</RCC>

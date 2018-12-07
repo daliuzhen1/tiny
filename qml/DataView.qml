@@ -5,11 +5,12 @@ import QtQuick.Dialogs 1.3
 import QtQuick.Particles 2.11
 import QtQuick.Controls.Styles 1.4
 import AllIn 1.0
+import "Global.js" as Global
 Item {
     id: dataView
 
-    property Item mainWindow
-    anchors.fill: mainWindow
+    property Item mainWindowContentItem
+    anchors.fill: mainWindowContentItem
     DataViewQML
     {
         id: dataViewQML
@@ -242,10 +243,20 @@ Item {
                         height: 30
                         onClicked:
                         {
+                            console.log(tableName)
+                            var queryViewQML = dataViewQML.createQuery(tableName)
+                            if (!queryViewQML)
+                                console.log("create query error")
+                            else
+                                console.log(queryViewQML.queryName)
+                            console.log("aaa")
                             var component = Qt.createComponent("QueryView.qml")
                             console.log(component.errorString())
                             if (component.status == Component.Ready)
-                                var queryView = component.createObject(mainWindow)
+                            {
+                                var queryView = component.createObject(mainWindowContentItem, {"queryViewQML" : queryViewQML})
+                                Global.addChildView("queryView", queryView)
+                            }
                             dataView.visible = false
                         }
                     }

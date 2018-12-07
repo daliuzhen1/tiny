@@ -2,7 +2,7 @@
 #include <parquet/file_writer.h>
 #include <arrow/table_builder.h>
 #include <QString>
-ColumnStorageWriter::ColumnStorageWriter(std::vector<TableColumnInfo>& colInfos, std::string& outFileName):
+ColumnStorageWriter::ColumnStorageWriter(std::vector<std::shared_ptr<TableColumnInfo>>& colInfos, std::string& outFileName):
     _colInfos(colInfos),
     _outFileName(outFileName),
     _curr_rg_writer(nullptr)
@@ -23,38 +23,38 @@ void ColumnStorageWriter::setupSchema()
     for (unsigned int i = 0; i < _colInfos.size(); i++)
     {
         parquet::schema::NodePtr field;
-        switch (_colInfos[i].colType)
+        switch (_colInfos[i]->colType)
         {
         case DT_INTEGER:
-            field = parquet::schema::PrimitiveNode::Make(_colInfos[i].colName, parquet::Repetition::REQUIRED,
+            field = parquet::schema::PrimitiveNode::Make(_colInfos[i]->colName, parquet::Repetition::REQUIRED,
                                                           parquet::Type::INT64, parquet::LogicalType::NONE);
             break;
         case DT_DOUBLE:
-            field = parquet::schema::PrimitiveNode::Make(_colInfos[i].colName, parquet::Repetition::REQUIRED,
+            field = parquet::schema::PrimitiveNode::Make(_colInfos[i]->colName, parquet::Repetition::REQUIRED,
                                                           parquet::Type::DOUBLE, parquet::LogicalType::NONE);
             break;
         case DT_TEXT:
-            field = parquet::schema::PrimitiveNode::Make(_colInfos[i].colName, parquet::Repetition::REQUIRED,
+            field = parquet::schema::PrimitiveNode::Make(_colInfos[i]->colName, parquet::Repetition::REQUIRED,
                                                           parquet::Type::BYTE_ARRAY, parquet::LogicalType::NONE);
             break;
         case DT_DATE:
-            field = parquet::schema::PrimitiveNode::Make(_colInfos[i].colName, parquet::Repetition::REQUIRED,
+            field = parquet::schema::PrimitiveNode::Make(_colInfos[i]->colName, parquet::Repetition::REQUIRED,
                                                           parquet::Type::INT64, parquet::LogicalType::NONE);
             break;
         case DT_CURRENCY:
-            field = parquet::schema::PrimitiveNode::Make(_colInfos[i].colName, parquet::Repetition::REQUIRED,
+            field = parquet::schema::PrimitiveNode::Make(_colInfos[i]->colName, parquet::Repetition::REQUIRED,
                                                           parquet::Type::DOUBLE, parquet::LogicalType::NONE);
             break;
         case DT_LONGITUDE:
-            field = parquet::schema::PrimitiveNode::Make(_colInfos[i].colName, parquet::Repetition::REQUIRED,
+            field = parquet::schema::PrimitiveNode::Make(_colInfos[i]->colName, parquet::Repetition::REQUIRED,
                                                           parquet::Type::FLOAT, parquet::LogicalType::NONE);
             break;
         case DT_LATITUDE:
-            field = parquet::schema::PrimitiveNode::Make(_colInfos[i].colName, parquet::Repetition::REQUIRED,
+            field = parquet::schema::PrimitiveNode::Make(_colInfos[i]->colName, parquet::Repetition::REQUIRED,
                                                           parquet::Type::FLOAT, parquet::LogicalType::NONE);
             break;
         case DT_NUM:
-            field = parquet::schema::PrimitiveNode::Make(_colInfos[i].colName, parquet::Repetition::REQUIRED,
+            field = parquet::schema::PrimitiveNode::Make(_colInfos[i]->colName, parquet::Repetition::REQUIRED,
                                                           parquet::Type::INT64, parquet::LogicalType::NONE);
             break;
         default:
@@ -80,7 +80,7 @@ void ColumnStorageWriter::write_batch(outdata_t& data, bool lastPack)
     {
         for (int colIdx = 0; colIdx < data.size(); colIdx++)
         {
-            switch (_colInfos[colIdx].colType)
+            switch (_colInfos[colIdx]->colType)
             {
             case DT_INTEGER:
             {
@@ -147,10 +147,11 @@ void ColumnStorageWriter::write_batch(outdata_t& data, bool lastPack)
                 throw std::runtime_error("error format");
             }
         }
-        _curr_rg_writer->Close();
     }
+    _curr_rg_writer->Close();
     if (lastPack)
     {
         _parquetFileWriter->Close();
     }
+    qDebug() << "ColumnStorageWriter::finish";
 }

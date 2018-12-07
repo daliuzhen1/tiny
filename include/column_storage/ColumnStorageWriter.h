@@ -16,12 +16,12 @@ class ColumnStorageWriter
 {
 public:
     typedef std::shared_ptr<ColumnStorageWriter> Ptr;
-    ColumnStorageWriter(std::vector<TableColumnInfo>& colInfos, std::string& outFileName);
+    ColumnStorageWriter(std::vector<std::shared_ptr<TableColumnInfo>>& colInfos, std::string& outFileName);
     ColumnStorageWriter(ColumnStorageWriter&) = delete;
     void write_batch(outdata_t& data, bool lastPack);
 private:
     void setupSchema();
-    std::vector<TableColumnInfo> &_colInfos;
+    std::vector<std::shared_ptr<TableColumnInfo>> &_colInfos;
     std::shared_ptr<parquet::schema::GroupNode> _schema;
     std::string _outFileName;
     std::shared_ptr<arrow::io::FileOutputStream> _outPutStream;

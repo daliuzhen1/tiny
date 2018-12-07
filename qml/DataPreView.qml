@@ -65,4 +65,8 @@ TableView
         }
 
     }
+    onCurrentRowChanged:
+    {
+        console.log(currentRow)
+    }
 }

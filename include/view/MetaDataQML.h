@@ -91,20 +91,112 @@ public:
         _colIndex = colIndex;
     }
 
-    bool colIndex()
+    int colIndex()
     {
         return _colIndex;
     }
 
     static std::shared_ptr<TableColumnInfo> covertFromQML(TableColumnInfoQML& tableColumnInfoQML);
     static std::shared_ptr<TableColumnInfoQML> covertFromCPP(TableColumnInfo& tableColumnInfo);
-public:
+private:
     QString _colID;
     QString _colName;
     QString _colFormat;
     DataTypeQML _colType;
     bool _used;
     int _colIndex;
+};
+
+class QueryNodeQML : public QObject
+{
+Q_OBJECT
+public:
+    explicit QueryNodeQML(QObject *parent = nullptr){};
+
+    Q_PROPERTY(QString queryID READ queryID WRITE setQueryID)
+    Q_PROPERTY(QString nodeID READ nodeID WRITE setNodeID)
+    Q_PROPERTY(int nodeIndex READ nodeIndex WRITE setNodeIndex)
+    Q_PROPERTY(QString nodeName READ nodeName WRITE setNodeName)
+    Q_PROPERTY(QString operationOnNode READ operationOnNode WRITE setOperationOnNode)
+    Q_PROPERTY(QVariant tableColumnInfoList READ tableColumnInfoList)
+
+public:
+
+    void setQueryID(QString queryID)
+    {
+        _queryID = queryID;
+    }
+    QString queryID()
+    {
+        return _queryID;
+    }
+
+    void setNodeID(QString nodeID)
+    {
+        _nodeID = nodeID;
+    }
+
+    QString nodeID()
+    {
+        return _nodeID;
+    }
+
+    void setNodeIndex(int nodeIndex)
+    {
+        _nodeIndex = nodeIndex;
+    }
+
+    int nodeIndex()
+    {
+        return _nodeIndex;
+    }
+
+    void setNodeName(QString nodeName)
+    {
+        _nodeName = nodeName;
+    }
+
+    QString nodeName()
+    {
+        return _nodeName;
+    }
+
+    void setOperationOnNode(QString operationOnNode)
+    {
+        _operationOnNode = operationOnNode;
+    }
+
+    QString operationOnNode()
+    {
+        return _operationOnNode;
+    }
+
+    QVariant tableColumnInfoList()
+    {
+         std::vector<std::shared_ptr<TableColumnInfoQML>> pTableColumnInfoQMLVec;
+        QVariantList qList;
+        for (unsigned int i = 0; i < _pTableColumnInfo.size(); i++)
+        {
+            std::shared_ptr<TableColumnInfoQML> pTableColumnInfoQML = TableColumnInfoQML::covertFromCPP(*(_pTableColumnInfo[i]));
+            pTableColumnInfoQMLVec.push_back(pTableColumnInfoQML);
+            qList.append((QVariant::fromValue<TableColumnInfoQML*>(pTableColumnInfoQML.get())));
+        }
+        return QVariant::fromValue(qList);
+    }
+
+
+    static std::shared_ptr<QueryNode> covertFromQML(QueryNodeQML& queryNodeQML);
+    static std::shared_ptr<QueryNodeQML> covertFromCPP(QueryNode& queryNode);
+
+    std::vector<TableColumnInfo::Ptr>& getTableColumnInfo();
+    void setTableColumnInfo(std::vector<TableColumnInfo::Ptr>& pTableColumnInfo);
+private:
+    QString _operationOnNode;
+    QString _queryID;
+    QString _nodeID;
+    QString _nodeName;
+    int _nodeIndex;
+    std::vector<TableColumnInfo::Ptr> _pTableColumnInfo;
 };
 
 #endif

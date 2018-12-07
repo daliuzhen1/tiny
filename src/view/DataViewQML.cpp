@@ -4,6 +4,7 @@
 #include <QSharedPointer>
 #include <QUuid>
 #include "include/view/DataViewQML.h"
+#include "include/view/QueryViewQML.h"
 #include "include/file_extractor/CsvExtractor.h"
 #include "include/common/MetaData.h"
 DataViewQML::DataViewQML(QObject *parent): QObject(parent),pDataTableModeForAllData(new DataTableModel),
@@ -20,8 +21,8 @@ QList<QString> DataViewQML::loadHistoryDatabase()
     QList<QString> dataBaseName;
 
     for (int i = 0; i < sourceInfo.size(); i++)
-    {
-        std::shared_ptr<Extractor> _pCsvExtractor;
+        {
+            std::shared_ptr<Extractor> _pCsvExtractor;
         if (sourceInfo.at(i)->sourceType == ST_CSV)
         {
             std::shared_ptr<CSVSourceInfo> csvSourceInfo = std::dynamic_pointer_cast<CSVSourceInfo>(sourceInfo.at(i));
@@ -67,6 +68,7 @@ Q_INVOKABLE QList<QString> DataViewQML::getTableList(int databaseIndex)
     std::shared_ptr<std::vector<std::string>> pVecStr = extractorVec.at(databaseIndex)->getTableList();
     for (unsigned int i = 0; i < pVecStr->size(); i++)
         qTabListStr.push_back(QString(pVecStr->at(i).c_str()));
+    _currentDataBaseIndex = databaseIndex;
     return qTabListStr;
 }
 
@@ -161,9 +163,25 @@ QVariant DataViewQML::getPreViewData()
     return QVariant::fromValue(pDataTableMode);
 }
 
-bool DataViewQML::createQuery()
+QVariant DataViewQML::createQuery(QString tabName)
 {
-    return true;
+    bool finded = false;
+    QList<QString> qTabListStr = getTableList(_currentDataBaseIndex);
+    for (unsigned int i = 0; i < qTabListStr.size(); i++)
+    {
+        if (tabName == qTabListStr[i])
+        {
+            finded = true;
+            break;
+        }
+    }
+    if (finded)
+    {
+        std::string tabNameStd = tabName.toStdString();
+        extractorVec.at(_currentDataBaseIndex)->selectTable(tabNameStd);
+        return QVariant::fromValue(new QueryViewQML(parent(), tabNameStd, _sourceInfoVec.at(_currentDataBaseIndex), extractorVec.at(_currentDataBaseIndex)));
+    }
+    return QVariant();
 }
 
 //QVariant DataViewQML::getAllData(bool firstPack)

@@ -29,3 +29,39 @@ std::shared_ptr<TableColumnInfoQML> TableColumnInfoQML::covertFromCPP(TableColum
     pTableColumnInfoQML->setUsed(tableColumnInfo.used);
     return pTableColumnInfoQML;
 }
+
+
+std::shared_ptr<QueryNode> QueryNodeQML::covertFromQML(QueryNodeQML& queryNodeQML)
+{
+    std::shared_ptr<QueryNode> queryNode(new QueryNode);
+    queryNode->nodeID = queryNodeQML.nodeID().toStdString();
+    queryNode->nodeIndex = queryNodeQML.nodeIndex();
+    queryNode->nodeName = queryNodeQML.nodeName().toStdString();
+    queryNode->queryID = queryNodeQML.queryID().toStdString();
+    queryNode->operationOnNode = queryNodeQML.operationOnNode().toStdString();
+    queryNode->pTableColumnInfo = queryNodeQML.getTableColumnInfo();
+    return queryNode;
+
+}
+std::shared_ptr<QueryNodeQML> QueryNodeQML::covertFromCPP(QueryNode& queryNode)
+{
+    std::shared_ptr<QueryNodeQML> queryNodeQML(new QueryNodeQML);
+    queryNodeQML->setNodeID(queryNode.nodeID.c_str());
+    queryNodeQML->setNodeName(queryNode.nodeName.c_str());
+    queryNodeQML->setNodeIndex(queryNode.nodeIndex);
+    queryNodeQML->setQueryID(queryNode.queryID.c_str());
+    queryNodeQML->setOperationOnNode(queryNode.operationOnNode.c_str());
+    queryNodeQML->setTableColumnInfo(queryNode.pTableColumnInfo);
+    return queryNodeQML;
+}
+
+
+std::vector<TableColumnInfo::Ptr>& QueryNodeQML::getTableColumnInfo()
+{
+    return _pTableColumnInfo;
+}
+
+void QueryNodeQML::setTableColumnInfo(std::vector<TableColumnInfo::Ptr>& pTableColumnInfo)
+{
+    _pTableColumnInfo = pTableColumnInfo;
+}

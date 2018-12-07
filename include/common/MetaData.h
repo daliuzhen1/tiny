@@ -39,18 +39,6 @@ struct CSVSourceInfo : public SourceInfo
     virtual bool unmakeDetail(std::string& sourceDetail);
 };
 
-struct QueryInfo
-{
-    SourceInfo::Ptr pSourceInfo;
-    std::string queryID;
-    std::string queryName;
-    int nodeNum;
-    static std::shared_ptr<QueryInfo> fromDBWithQueryID(std::string& queryID);
-    static std::vector<std::shared_ptr<QueryInfo>> fromDBWithQueryName(std::string& queryName);
-    static std::vector<std::shared_ptr<QueryInfo>> fromDBWithSourceID(std::string& sourceID);
-    static bool toDB(std::shared_ptr<QueryInfo> queryNode);
-};
-
 enum DataType {
   DT_INTEGER = 0,
   DT_DOUBLE = 1,
@@ -80,14 +68,30 @@ struct TableColumnInfo
 
 struct QueryNode
 {
+    typedef std::shared_ptr<QueryNode> Ptr;
     std::string operationOnNode;
     std::string queryID;
     std::string nodeID;
+    std::string nodeName;
     int nodeIndex;
     std::vector<TableColumnInfo::Ptr> pTableColumnInfo;
     static std::shared_ptr<QueryNode> fromDBWithNodeID(std::string& nodeID);
     static std::vector<std::shared_ptr<QueryNode>> fromDBWithQueryID(std::string& queryID);
     static bool toDB(std::shared_ptr<QueryNode> queryNode);
 };
+
+struct QueryInfo
+{
+    SourceInfo::Ptr pSourceInfo;
+    std::vector<QueryNode::Ptr> pQueryNodeVec;
+    std::string queryID;
+    std::string queryName;
+    int nodeNum;
+    static std::shared_ptr<QueryInfo> fromDBWithQueryID(std::string& queryID);
+    static std::vector<std::shared_ptr<QueryInfo>> fromDBWithQueryName(std::string& queryName);
+    static std::vector<std::shared_ptr<QueryInfo>> fromDBWithSourceID(std::string& sourceID);
+    static bool toDB(std::shared_ptr<QueryInfo> queryNode);
+};
+
 
 #endif

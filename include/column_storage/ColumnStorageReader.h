@@ -16,12 +16,12 @@ class ColumnStorageReader
 {
 public:
     typedef std::shared_ptr<ColumnStorageReader> Ptr;
-    ColumnStorageReader(std::vector<TableColumnInfo>& colInfos, std::string& inFileName);
+    ColumnStorageReader(std::vector<std::shared_ptr<TableColumnInfo>>& colInfos, std::string& inFileName);
     ColumnStorageReader(ColumnStorageReader&) = delete;
     void read_batch(outdata_t& data, bool& lastPack);
-    std::vector<TableColumnInfo>& getColumnInfo();
+    std::vector<std::shared_ptr<TableColumnInfo>>& getColumnInfo();
 private:
-    std::vector<TableColumnInfo> _colInfos;
+    std::vector<std::shared_ptr<TableColumnInfo>> _colInfos;
     std::string _inFileName;
     std::shared_ptr<arrow::io::FileOutputStream> _outPutStream;
     std::shared_ptr<parquet::ParquetFileReader> _parquetFileReader;

@@ -23,7 +23,7 @@ public:
     Q_INVOKABLE bool selectTable(int databaseIndex, QString tabName);
     Q_INVOKABLE QVariant getMetaData();
     Q_INVOKABLE QVariant getPreViewData();
-    Q_INVOKABLE bool createQuery();
+    Q_INVOKABLE QVariant createQuery(QString tabName);
 //    Q_INVOKABLE QVariant getAllData(bool firstPack);
     Q_INVOKABLE bool finishingGetData();
 private:

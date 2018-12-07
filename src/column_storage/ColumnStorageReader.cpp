@@ -1,22 +1,22 @@
 #include "include/column_storage/ColumnStorageReader.h"
 
 #define NUMBEROFREAD 10
-ColumnStorageReader::ColumnStorageReader(std::vector<TableColumnInfo>& colInfos, std::string& inFileName) : _colInfos(colInfos),
+ColumnStorageReader::ColumnStorageReader(std::vector<std::shared_ptr<TableColumnInfo>>& colInfos, std::string& inFileName) : _colInfos(colInfos),
     _inFileName(inFileName),
     _current_rg_idx(0)
 {
     _parquetFileReader = parquet::ParquetFileReader::OpenFile(inFileName);
     std::shared_ptr<parquet::FileMetaData> file_metadata = _parquetFileReader->metadata();
     int num_columns = file_metadata->num_columns();
-    if (num_columns)
+    if (!num_columns)
         throw std::runtime_error("column num is 0");
     const parquet::SchemaDescriptor* psd = file_metadata->schema();
     for (int i = 0; i < num_columns; i++)
     {
         // TODO now only is a column name
         const parquet::ColumnDescriptor* pcd = psd->Column(i);
-        TableColumnInfo colInfo;
-        colInfo.colName = pcd->name();
+        std::shared_ptr<TableColumnInfo> colInfo(new TableColumnInfo) ;
+        colInfo->colName = pcd->name();
         _colInfos.push_back(colInfo);
     }
 }
@@ -39,7 +39,7 @@ void ColumnStorageReader::read_batch(outdata_t& data, bool& lastPack)
         for (int i = 0; i < columnNum; i++)
         {
             std::shared_ptr<parquet::ColumnReader> column_reader = row_group_reader->Column(i);
-            switch (_colInfos.at(i).colType)
+            switch (_colInfos.at(i)->colType)
             {
             case DT_INTEGER:
             {
@@ -88,6 +88,7 @@ void ColumnStorageReader::read_batch(outdata_t& data, bool& lastPack)
             case DT_CURRENCY:
             case DT_LONGITUDE:
             case DT_LATITUDE:
+            case DT_DOUBLE:
             {
                 parquet::DoubleReader* double_reader =
                         static_cast<parquet::DoubleReader*>(column_reader.get());
@@ -141,7 +142,7 @@ void ColumnStorageReader::read_batch(outdata_t& data, bool& lastPack)
 }
 
 
-std::vector<TableColumnInfo>& ColumnStorageReader::getColumnInfo()
+std::vector<std::shared_ptr<TableColumnInfo>>& ColumnStorageReader::getColumnInfo()
 {
     return _colInfos;
 }

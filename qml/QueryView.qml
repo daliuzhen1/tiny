@@ -1,17 +1,23 @@
 import QtQuick 2.0
 import QtQuick.Controls.Styles 1.4
 import QtQuick.Controls 1.4
+import "Global.js" as Global
 import AllIn 1.0
 
 Item {
     id: queryView
-//    property DataViewQML DataViewQML
+    //    property DataViewQML DataViewQML
     anchors.fill: parent
-//    Component{
-//        id: columnComponent
-//        TableViewColumn { width: 120 }
-//    }
-    TextField
+    property var queryViewQML
+    //    Component{
+    //        id: columnComponent
+    //        TableViewColumn { width: 120 }
+    //    }
+    Component.onCompleted:
+    {
+    }
+
+    TextInput
     {
         id: queryName
         anchors.top: parent.top
@@ -20,9 +26,13 @@ Item {
         anchors.left: parent.left
         anchors.leftMargin: 10
         anchors.right: parent.right
-        anchors.rightMargin: 100
+        anchors.rightMargin: 120
         font.pointSize: 20
-//        placeholderText: "Query"
+        text: queryViewQML.queryName
+        onTextChanged:
+        {
+            queryViewQML.queryName = text
+        }
     }
 
     Button
@@ -34,10 +44,16 @@ Item {
         anchors.leftMargin: 20
         width: 80
         text: "Back"
+        onClicked:
+        {
+            var dataView = Global.getChildView("dataView")
+            queryView.visible = false
+            queryView.destroy()
+            dataView.visible = true
+        }
     }
 
-
-    TextField
+    TextInput
     {
         id: nodeName
         anchors.top: queryName.bottom
@@ -46,9 +62,12 @@ Item {
         anchors.left: parent.left
         anchors.leftMargin: 10
         anchors.right: parent.right
-        anchors.rightMargin: 100
+        anchors.rightMargin: 120
         font.pointSize: 15
-//        placeholderText: "Query"
+        Component.onCompleted:
+        {
+            text = queryViewQML.queryName
+        }
     }
     Row
     {
@@ -138,11 +157,6 @@ Item {
         anchors.rightMargin: 10
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 50
-        Rectangle
-        {
-            color: "yellow"
-            anchors.fill: parent
-        }
 
         Button
         {
@@ -176,20 +190,20 @@ Item {
             model: columnModel
             delegate: columnDelegate
             ListModel {
-                 id: columnModel
-                 ListElement {
-                     name: "Apple"
-                     cost: 2.45
-                 }
-                 ListElement {
-                     name: "Orange"
-                     cost: 3.25
-                 }
-                 ListElement {
-                     name: "Banana"
-                     cost: 1.95
-                 }
-             }
+                id: columnModel
+                ListElement {
+                    name: "Apple"
+                    cost: 2.45
+                }
+                ListElement {
+                    name: "Orange"
+                    cost: 3.25
+                }
+                ListElement {
+                    name: "Banana"
+                    cost: 1.95
+                }
+            }
             Component
             {
                 id: columnDelegate
@@ -214,6 +228,75 @@ Item {
             anchors.right: parent.right
             anchors.top: parent.top
             anchors.bottom: parent.bottom
+            property var queryTableColInfo
+            style: TableViewStyle {
+                headerDelegate: Rectangle {
+                    id : headerDelegate
+                    height: 30
+                    width: textItem.implicitWidth
+                    color:
+                    {
+                        if (TableColumnInfoQML.DT_TEXT == queryTable.queryTableColInfo[styleData.column].colType)
+                        {
+                            return "green"
+                        }
+                        else if (TableColumnInfoQML.DT_DATE == queryTable.queryTableColInfo[styleData.column].colType)
+                        {
+                            return "gray"
+                        }
+                        else
+                            return "lightsteelblue"
+                    }
+                    Text {
+                        id: textItem
+                        anchors.fill: parent
+                        verticalAlignment: Text.AlignVCenter
+                        horizontalAlignment: styleData.textAlignment
+                        anchors.leftMargin: 12
+                        text: styleData.value
+                        elide: Text.ElideRight
+                    }
+
+                    Rectangle {
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        anchors.bottom: parent.bottom
+                        anchors.bottomMargin: 1
+                        anchors.topMargin: 1
+                        width: 1
+                        color: "#ccc"
+                    }
+                }
+            }
+            Component{
+                id: columnComponent
+                TableViewColumn { width: 100 }
+            }
+
+            function setTitle(colInfo)
+            {
+                while (queryTable.getColumn(0))
+                {
+                    queryTable.removeColumn(0)
+                }
+                for (var i = 0; i < colInfo.length; i++)
+                {
+                    queryTable.addColumn(columnComponent.createObject(queryTable, { "role": colInfo[i].colName,
+                                                                          "title": colInfo[i].colName}))
+                }
+            }
+            Component.onCompleted:
+            {
+                queryTableColInfo = queryViewQML.getMetaData(0)
+                for (var i = 0; i < queryTableColInfo.length; i++)
+                {
+                    console.log(queryTableColInfo[i].colName)
+                }
+                console.log(queryTableColInfo.length)
+                queryTable.setTitle(queryTableColInfo)
+                queryTable.model = queryViewQML.getData(0)
+            }
+
         }
     }
     TabView
@@ -230,91 +313,4 @@ Item {
             title: "yellow"
         }
     }
-
-
-
-//    TableView
-//    {
-//        id: queryTable
-//        anchors.bottom: parent.bottom
-//        anchors.left: parent.left
-//        anchors.leftMargin: parent.width / 8
-//        anchors.right:  parent.right
-//        anchors.rightMargin: 20
-//        anchors.bottomMargin: 20
-//        anchors.top: parent.top
-//        anchors.topMargin: parent.height / 2
-//        property var queryTableColumnInfos
-//        style: TableViewStyle {
-//            headerDelegate: Rectangle {
-//                id : headerDelegate
-//                height: 30
-//                width: textItem.implicitWidth
-//                color:
-//                {
-//                    if (TableColumnInfoQML.DT_TEXT == queryTable.queryTableColumnInfos[styleData.column].colType)
-//                    {
-//                        return "green"
-//                    }
-//                    else if (TableColumnInfoQML.DT_DATE == queryTable.queryTableColumnInfos[styleData.column].colType)
-//                    {
-//                        return "gray"
-//                    }
-//                    else
-//                        return "lightsteelblue"
-//                }
-//                Text {
-//                    id: textItem
-//                    anchors.fill: parent
-//                    verticalAlignment: Text.AlignVCenter
-//                    horizontalAlignment: styleData.textAlignment
-//                    anchors.leftMargin: 12
-//                    text: styleData.value
-//                    elide: Text.ElideRight
-//                }
-
-//                Rectangle {
-//                    anchors.right: parent.right
-//                    anchors.top: parent.top
-//                    anchors.bottom: parent.bottom
-//                    anchors.bottomMargin: 1
-//                    anchors.topMargin: 1
-//                    width: 1
-//                    color: "#ccc"
-//                }
-//            }
-//        }
-//        function readTableColumnInfos(colInfos) {
-//            queryTableColumnInfos = colInfos
-//            while (queryTable.getColumn(0))
-//            {
-//                queryTable.removeColumn(0)
-//            }
-//            for (var i = 0; i < queryTableColumnInfos.length; i++)
-//            {
-//                queryTable.addColumn(columnComponent.createObject(tablePreview, { "role": queryTableColumnInfos[i].colName,
-//                                                                        "title": queryTableColumnInfos[i].colName}))
-//            }
-//            getData()
-//        }
-//        function getData()
-//        {
-//            var firstPack = true
-//            queryTable.model = DataViewQML.getAllData(firstPack)
-//            firstPack = false
-//            var lastPack = DataViewQML.finishingGetData()
-//            while (!lastPack)
-//            {
-//                queryTable.model = null
-//                queryTable.model = DataViewQML.getAllData(firstPack)
-//                lastPack = DataViewQML.finishingGetData()
-//            }
-//        }
-
-//        Component.onCompleted:
-//        {
-//            console.log(2222)
-//            DataViewQML.getMetaData(queryTable)
-//        }
-//    }
 }

@@ -12,10 +12,11 @@ std::shared_ptr<DBInterface> DBInterface::getDBInstance()
 
 DBInterface::DBInterface()
 {
-    initializeDB();
+    initalizeNoSqlDB();
+    initializeSqlDB();
 }
 
-void DBInterface::initializeDB()
+void DBInterface::initializeSqlDB()
 {
     _sqldb = QSqlDatabase::addDatabase("QSQLITE", "sqlite");
     _sqldb.setDatabaseName("meta.db");
@@ -44,18 +45,20 @@ void DBInterface::initializeDB()
     {
         throw std::runtime_error("init db error");
     }
-
-//    leveldb::DB* leveldb;
-//    leveldb::Options options;
-//    options.create_if_missing = true;
-//    std::shared_ptr<leveldb::DB> pLevelDB;
-//    leveldb::Status status = leveldb::DB::Open(options, "columnInfos", &leveldb);
-//    std::shared_ptr<leveldb::DB> levelDbptr(leveldb);
-//    _noSqldb["columnInfos"] = levelDbptr;
-//    if (false == status.ok())
-//    {
-//        throw std::runtime_error("init db error");
-//    }
+}
+void DBInterface::initalizeNoSqlDB()
+{
+    leveldb::DB* leveldb;
+    leveldb::Options options;
+    options.create_if_missing = true;
+    std::string name = "columnInfos";
+    leveldb::Status status = leveldb::DB::Open(options, name, &leveldb);
+    std::shared_ptr<leveldb::DB> levelDbptr(leveldb);
+    _noSqldb["columnInfos"] = levelDbptr;
+    if (false == status.ok())
+    {
+        throw std::runtime_error("init db error");
+    }
 }
 
 

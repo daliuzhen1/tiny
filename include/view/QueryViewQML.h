@@ -15,51 +15,33 @@ class QueryViewQML : public QObject
 Q_OBJECT
 public:
     explicit QueryViewQML(QObject *parent = nullptr);
+    explicit QueryViewQML(QObject *parent, std::string& queryName, std::shared_ptr<SourceInfo> pSourceInfo, std::shared_ptr<Extractor> pExtractor);
+    explicit QueryViewQML(QObject *parent, QString queryID);
     Q_PROPERTY(QString queryName READ queryName WRITE setQueryName NOTIFY QueryNameChanged)
-    Q_PROPERTY(QString nodeName READ nodeName WRITE setNodeName NOTIFY NodeNameChanged)
 
-    Q_INVOKABLE QVariant getMetaData();
+//    Q_INVOKABLE QVariant getQueryNode();
+//    Q_INVOKABLE bool selectNode(int nodeIndex);
 
-
-    Q_INVOKABLE QVariant getColumnInfo(int index)
-    {
-        return QVariant::fromValue<TableColumnInfoQML*>(pTableColumnInfoQMLVec.at(index).get());
-    }
-
-    Q_INVOKABLE TableColumnInfoQML setColumnInfo(int index, QVariant value)
-    {
-        QObject * obj = qvariant_cast<QObject *>(value);
-        TableColumnInfoQML *pTableColumnInfoQML = qobject_cast<TableColumnInfoQML*>(obj);
-        std::shared_ptr<TableColumnInfo> pTableColumnInfo = TableColumnInfoQML::covertFromQML(*pTableColumnInfoQML);
-    }
+    Q_INVOKABLE QVariant getMetaData(int index);
+    Q_INVOKABLE QVariant getData(int index);
 
     void setQueryName(QString queryName)
     {
-        _queryName = queryName;
+        _pQueryInfo->queryName = queryName.toStdString();
         emit QueryNameChanged();
         return;
     }
     QString queryName()
     {
-        return _queryName;
-    }
-
-    void setNodeName(QString nodeName)
-    {
-        _nodeName = nodeName;
-        emit NodeNameChanged();
-        return;
-    }
-    QString nodeName()
-    {
-        return _nodeName;
+        return _pQueryInfo->queryName.c_str();
     }
 
 
 private:
-    QString _queryName;
-    QString _nodeName;
+    std::shared_ptr<QueryInfo> _pQueryInfo;
     std::vector<std::shared_ptr<TableColumnInfoQML>> pTableColumnInfoQMLVec;
+    std::vector<std::shared_ptr<Extractor>> _pExtractoVec;
+
 signals:
     void QueryNameChanged();
     void NodeNameChanged();

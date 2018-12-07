@@ -8,5 +8,6 @@
         <file>CollapsiblePane.qml</file>
         <file>../resource/loading.gif</file>
         <file>LoadingView.qml</file>
+        <file>Global.js</file>
     </qresource>
 </RCC>

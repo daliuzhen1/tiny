@@ -16,15 +16,18 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 #win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../Users/zhenl/AppData/Local/Continuum/miniconda3/Library/lib/ -larrow -lparquet
 #else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../Users/zhenl/AppData/Local/Continuum/miniconda3/Library/lib/ larrow -lparquet
-
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/third-party/levelDB/release -lleveldb
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/third-party/levelDB/debug -lleveldb
+LIBS += -LC:/Users/zhenl/Downloads/boost_1_68_0/lib/lib
 
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/third-party/sqlite3/release -lsqlite3
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/third-party/sqlite3/debug -lsqlite3
 
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/third-party/levelDB/release -lleveldb
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/third-party/levelDB/debug -lleveldb
+
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/third-party/arrow/release -larrow -lparquet
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/third-party/arrow/debug -larrow -lparquet
+
+
 
 #INCLUDEPATH += $$PWD/../../Users/zhenl/AppData/Local/Continuum/miniconda3/Library/include
 INCLUDEPATH += $$PWD/third-party/sqlite3/include
@@ -59,7 +62,7 @@ HEADERS += \
     include/common/DBInterface.h \
     include/sql_parser/SQLiteParserAdapter.h \
     include/view/QueryViewQML.h \
-    include/common/NodeInfo.h
+    include/common/Config.h
 
 
 SOURCES += \
@@ -75,6 +78,7 @@ SOURCES += \
     src/common/DBInterface.cpp \
     src\main.cpp \
     src/sql_parser/CsvSQLParser.cpp \
-    src/common/NodeInfo.cpp
+    src/view/QueryViewQML.cpp \
+    src/common/Config.cpp
 
 DISTFILES +=

@@ -218,6 +218,9 @@ std::shared_ptr<QueryInfo> QueryInfo::fromDBWithQueryID(std::string& queryID)
         pQueryInfo->pSourceInfo  = SourceInfo::fromDBWithSourceID(sourceID);
         if (!pQueryInfo->pSourceInfo)
             return nullptr;
+        pQueryInfo->pQueryNodeVec = QueryNode::fromDBWithQueryID(queryID);
+        if (pQueryInfo->pQueryNodeVec.size() == 0)
+            return nullptr;
         return pQueryInfo;
     }
     return nullptr;
@@ -245,6 +248,12 @@ std::vector<std::shared_ptr<QueryInfo>> QueryInfo::fromDBWithQueryName(std::stri
         std::string sourceID = query.value("sourceID").toString().toStdString();
         pQueryInfo->pSourceInfo  = SourceInfo::fromDBWithSourceID(sourceID);
         if (!pQueryInfo->pSourceInfo)
+        {
+            queryInfos.clear();
+            return queryInfos;
+        }
+        pQueryInfo->pQueryNodeVec = QueryNode::fromDBWithQueryID(pQueryInfo->queryID);
+        if (pQueryInfo->pQueryNodeVec.size() == 0)
         {
             queryInfos.clear();
             return queryInfos;
@@ -279,6 +288,12 @@ std::vector<std::shared_ptr<QueryInfo>> QueryInfo::fromDBWithSourceID(std::strin
             queryInfos.clear();
             return queryInfos;
         }
+        pQueryInfo->pQueryNodeVec = QueryNode::fromDBWithQueryID(pQueryInfo->queryID);
+        if (pQueryInfo->pQueryNodeVec.size() == 0)
+        {
+            queryInfos.clear();
+            return queryInfos;
+        }
         queryInfos.push_back(pQueryInfo);
     }
     return queryInfos;
@@ -298,11 +313,18 @@ bool QueryInfo::toDB(std::shared_ptr<QueryInfo> queryInfo)
     query.bindValue(":queryName", queryInfo->queryName.c_str());
     query.bindValue(":nodeNum", queryInfo->nodeNum);
     query.bindValue(":sourceID", queryInfo->pSourceInfo->sourceID.c_str());
-    if (query.exec())
+    if (!query.exec())
     {
-        return true;
+        return false;
     }
-    return false;
+    for (int i = 0; i < queryInfo->pQueryNodeVec.size(); i++)
+    {
+        if (!QueryNode::toDB(queryInfo->pQueryNodeVec.at(i)))
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 
@@ -378,6 +400,7 @@ std::shared_ptr<QueryNode> QueryNode::fromDBWithNodeID(std::string& nodeID)
         pQueryNode->nodeIndex = query.value("nodeIndex").toInt();
         pQueryNode->operationOnNode = query.value("operationOnNode").toString().toStdString();
         pQueryNode->queryID = query.value("queryID").toString().toStdString();
+        pQueryNode->pTableColumnInfo = TableColumnInfo::fromDBWithNodeID(pQueryNode->nodeID);
         return pQueryNode;
     }
     return nullptr;
@@ -401,6 +424,7 @@ std::vector<std::shared_ptr<QueryNode>> QueryNode::fromDBWithQueryID(std::string
         pQueryNode->nodeIndex = query.value("nodeIndex").toInt();
         pQueryNode->operationOnNode = query.value("operationOnNode").toString().toStdString();
         pQueryNode->queryID = query.value("queryID").toString().toStdString();
+        pQueryNode->pTableColumnInfo = TableColumnInfo::fromDBWithNodeID(pQueryNode->nodeID);
         queryNodes.push_back(pQueryNode);
     }
     return queryNodes;
@@ -419,11 +443,13 @@ bool QueryNode::toDB(std::shared_ptr<QueryNode> queryNode)
     query.bindValue(":queryID", queryNode->queryID.c_str());
     query.bindValue(":nodeIndex", queryNode->nodeIndex);
     query.bindValue(":operationOnNode", queryNode->operationOnNode.c_str());
-    if (query.exec())
+    if (!query.exec())
     {
-        return true;
+        return false;
     }
-    return false;
+    if (!TableColumnInfo::toDBWithNodeID(queryNode->nodeID, queryNode->pTableColumnInfo))
+        return false;
+    return true;
 }
 
 //std::string CSVSourceInfo::toJsonStr(Ptr csvInfoPtr)

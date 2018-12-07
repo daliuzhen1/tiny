@@ -14,6 +14,7 @@ using namespace std;
 char const cThousandSep[] = {',', '.', ' ', '\''};
 char const cDecimalSep[] = {',', '.'};
 CsvExtractor::CsvExtractor(std::string& filePath):
+    _currentRowIndex(0),
     _filePath(filePath)
 {
     _validDelimiter = std::string(",|;\t^~ "); // Supported filed delimiter
@@ -53,6 +54,7 @@ char CsvExtractor::getDelimiter()
     if (!_pQfile->isOpen() && !_pQfile->open(QIODevice::ReadOnly)) {
         throw runtime_error("can not open the file");
     }
+    _pQfile->seek(0);
     qint64 pos = _pQfile->pos();
     int lineCount = 0;
     std::vector<int> delimiterCountInLine;
@@ -167,11 +169,13 @@ bool CsvExtractor::parseData(outdata_t &vvs, bool &bLastPack)
     vvs.clear();
     int i = 0;
     bLastPack = false;
+    bool initilizedVec = false;
     while (!_pQfile->atEnd() && i <= PERREADCOUNT)
     {
         QByteArray line = _pQfile->readLine();
-        if (i == 0)
+        if (_currentRowIndex == 0)
         {
+            _currentRowIndex++;
             i++;
             continue;
         }
@@ -184,13 +188,14 @@ bool CsvExtractor::parseData(outdata_t &vvs, bool &bLastPack)
             line.chop(1);
         }
         QList<QByteArray> rowStrs = line.split(_validDelimiterChar);
-        if (i == 1)
+        if (!initilizedVec)
         {
             vvs.reserve(rowStrs.size());
             for (int i = 0; i < rowStrs.size(); i++)
             {
                 vvs.push_back(std::shared_ptr<std::vector<std::string>>(new std::vector<std::string>));
             }
+            initilizedVec = true;
         }
         for (int i = 0; i < rowStrs.size(); i++)
         {

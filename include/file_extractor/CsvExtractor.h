@@ -44,7 +44,7 @@ private:
     bool isDecimalSep(const char c);
     DataType getFieldType(std::string& str, std::string &strDateFmt, char &guessSep, char &thSep, char &cDeSep);
 private:
-
+    int _currentRowIndex;
 	std::string _validDelimiter;
     char _validDelimiterChar;
     std::string _filePath;

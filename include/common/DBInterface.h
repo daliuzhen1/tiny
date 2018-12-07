@@ -14,7 +14,8 @@ public:
    std::map<std::string, std::shared_ptr<leveldb::DB>>  getNoSqlDB();
 
 private:
-   void initializeDB();
+   void initializeSqlDB();
+   void initalizeNoSqlDB();
    DBInterface();
    static std::shared_ptr<DBInterface> _instance;
    QSqlDatabase _sqldb;
